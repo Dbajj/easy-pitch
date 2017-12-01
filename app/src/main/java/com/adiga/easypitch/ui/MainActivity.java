@@ -18,7 +18,6 @@ import com.adiga.easypitch.R;
 import com.adiga.easypitch.io.MicrophoneIO;
 import com.adiga.easypitch.pitch.PitchDetector;
 
-import org.apache.commons.collections.Buffer;
 import org.w3c.dom.Text;
 
 import java.util.concurrent.LinkedBlockingQueue;

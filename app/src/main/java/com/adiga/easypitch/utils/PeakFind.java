@@ -50,6 +50,29 @@ public class PeakFind {
     // based off of a lagrange polynomial drawn between the three points
     private static GraphCoordinate parabolicInterpolate(GraphCoordinate left, GraphCoordinate center, GraphCoordinate right) {
 
+        GraphCoordinate max = calcMax(left,center,right);
+
+        while (Math.abs(max.getX() - center.getX()) <= 0.01) {
+
+            if (max.getX() > center.getX()) {
+                left = center;
+                center = max;
+            }
+
+            else {
+                right = center;
+                center = max;
+
+            }
+
+            max = calcMax(left,center,right);
+        }
+
+        return max;
+
+    }
+
+    private static GraphCoordinate calcMax(GraphCoordinate left, GraphCoordinate center, GraphCoordinate right) {
         double f_a = (double) left.getY();
         double f_b = (double) center.getY();
         double f_c = (double) right.getY();
@@ -58,27 +81,15 @@ public class PeakFind {
         double b = (double) center.getX();
         double c = (double) right.getX();
 
-        DoubleFunction<Double> g = (double x_max) -> f_a * (((x_max - b) * (x_max - c)) / ((a - b) * (a - c)))
+        double x_max = b + 0.5 * ((f_a - f_b) * Math.pow((c - b), 2) - (f_c - f_b) * Math.pow((b - a), 2))
+                / ((f_a - f_b) * (c - b) + (f_c - f_b) * (b - a));
+
+        double y_max = f_a * (((x_max - b) * (x_max - c)) / ((a - b) * (a - c)))
                 + f_b * (((x_max - c) * (x_max - a)) / ((b - c) * (b - a)))
                 + f_c * (((x_max - a) * (x_max - b)) / ((c - a) * (c - b)));
 
 
-        double x_max = b + 0.5 * ((f_a - f_b) * Math.pow((c - b), 2) - (f_c - f_b) * Math.pow((b - a), 2))
-                / ((f_a - f_b) * (c - b) + (f_c - f_b) * (b - a));
-
-
-        if (Math.abs(x_max - b) <= 0.01) {
-            return new GraphCoordinate(b, g.apply(b));
-        }
-        if (x_max > b) {
-            double f_x_max = g.apply(x_max);
-            return parabolicInterpolate(center, new GraphCoordinate(x_max, f_x_max), right);
-        } else {
-            double f_x_max = g.apply(x_max);
-
-            return parabolicInterpolate(left, new GraphCoordinate(x_max, f_x_max), center);
-        }
-
+        return new GraphCoordinate(x_max,y_max);
     }
 
 

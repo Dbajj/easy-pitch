@@ -14,13 +14,15 @@ public class PitchDetectorTest {
     @Test
     public void testFindPitch() {
 
-        double[] input = new double[4096];
+        double[] input1 = new double[4096];
 
-        for (int i = 0; i < input.length; i++) {
-            input[i] = i % 40;
+        for (int i = 0; i < input1.length; i++) {
+            input1[i] = i % 40;
         }
 
-        assertEquals(40, PitchDetector.findPitch(input,40*40),0);
+        assertEquals(40, PitchDetector.findPitch(input1,40*40),0);
 
     }
+
+
 }
