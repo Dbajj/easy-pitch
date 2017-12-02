@@ -20,7 +20,25 @@ public class PitchDetectorTest {
             input1[i] = i % 40;
         }
 
+
         assertEquals(40, PitchDetector.findPitch(input1,40*40),0);
+
+    }
+
+    @Test
+    public void testFindPitch2() {
+        double[] input2 = new double[4096];
+
+        for (int i = 0; i < input2.length; i++) {
+            input2[i] = Math.sin(Math.PI*2*i/1000);
+        }
+
+        assertEquals(1000,PitchDetector.findPitch(input2,1000*1000),0);
+    }
+
+    @Test
+    public void testFindPitch3() {
+
 
     }
 

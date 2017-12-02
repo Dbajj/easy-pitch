@@ -12,7 +12,7 @@ public class GraphCoordinate {
         private double y;
 
 
-        GraphCoordinate(double xInput, double yInput) {
+        public GraphCoordinate(double xInput, double yInput) {
             x = xInput;
             y = yInput;
         }

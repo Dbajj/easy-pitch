@@ -4,11 +4,15 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 
+import org.apache.commons.collections4.queue.CircularFifoQueue;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
 import java.util.ArrayList;
 import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -33,7 +37,7 @@ public class MicrophoneIO {
 
     private static final int bufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE,CHANNELS,ENCODING);
 
-    private LinkedBlockingQueue<Double> audioInputQueue = new LinkedBlockingQueue<Double>();
+    private ArrayBlockingQueue audioInputQueue = new ArrayBlockingQueue(4096,true);
 
     // TODO figure out what the constructor might need to do here, choose audio formats maybe?
     public MicrophoneIO() {
@@ -41,8 +45,8 @@ public class MicrophoneIO {
     }
 
 
-    public LinkedBlockingQueue<Double> getAudioInput() {
-            return audioInputQueue;
+    public Queue getAudioInput() {
+        return audioInputQueue;
     }
 
 
@@ -50,11 +54,11 @@ public class MicrophoneIO {
         recorder = new AudioRecord.Builder()
                 .setAudioSource(MediaRecorder.AudioSource.MIC)
                 .setAudioFormat(new AudioFormat.Builder()
-                    .setEncoding(ENCODING)
-                    .setSampleRate(SAMPLE_RATE)
-                    .setChannelMask(CHANNELS)
-                    .build())
-                .setBufferSizeInBytes(2*BUFFER_SIZE)
+                        .setEncoding(ENCODING)
+                        .setSampleRate(SAMPLE_RATE)
+                        .setChannelMask(CHANNELS)
+                        .build())
+                .setBufferSizeInBytes(BUFFER_SIZE)
                 .build();
 
         recorder.startRecording();
@@ -93,19 +97,15 @@ public class MicrophoneIO {
             double[] doubleInputArray = convertByteToDouble(byteInputArray);
 
             try {
-             for (double d : doubleInputArray) {
-                audioInputQueue.put(d);
-
-                if(audioInputQueue.size() > 4096) {
-                    for (int i = 0; i < 4096; i++) {
-                        audioInputQueue.take();
-                    }
+                for (double d : doubleInputArray) {
+                    audioInputQueue.put(d);
                 }
-            }
 
-            } catch(InterruptedException e) {
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+
+
 
         }
 
@@ -121,7 +121,7 @@ public class MicrophoneIO {
 
             int byteVal = ((inputAudioByteArray[i] & 0xFF) | (inputAudioByteArray[i+1] << 8));
 
-            doubleAudioOutput[i/2] = value;
+            doubleAudioOutput[i/2] = byteVal;
 
         }
 

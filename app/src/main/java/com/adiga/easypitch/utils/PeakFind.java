@@ -50,9 +50,10 @@ public class PeakFind {
     // based off of a lagrange polynomial drawn between the three points
     private static GraphCoordinate parabolicInterpolate(GraphCoordinate left, GraphCoordinate center, GraphCoordinate right) {
 
+
         GraphCoordinate max = calcMax(left,center,right);
 
-        while (Math.abs(max.getX() - center.getX()) <= 0.01) {
+        while (Math.abs(max.getX() - center.getX()) >= 0.01) {
 
             if (max.getX() > center.getX()) {
                 left = center;

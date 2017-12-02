@@ -35,42 +35,6 @@ public class MainActivity extends AppCompatActivity {
 
         addAudioFragment();
 
-        //TODO add this functionality into the AudioFragment
-        /*MicrophoneIO audioInput = new MicrophoneIO();
-
-        audioOutputTextID = (TextView) findViewById(R.id.audio_sample);
-
-
-        Handler handler = new Handler();
-        int delay = 1000;
-
-        audioInput.startRecording();
-
-
-        //TODO figure out why this queue is only ever outputting 0.0;
-
-        Buffer audioInputQueue = audioInput.getAudioInput();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                double[] waveInput = new double[audioInputQueue.size()];
-
-
-                if(audioInputQueue.size() >= 4096) {
-
-                    for(int i = 0; i < audioInputQueue.size(); i ++) {
-                        waveInput[i] = (double) audioInputQueue.get();
-                    }
-                    String foundPitch = String.valueOf(PitchDetector.findPitch(waveInput,44100));
-                    audioOutputTextID.setText(foundPitch);
-
-                }
-
-
-                handler.postDelayed(this,delay);
-
-            }
-        },delay); */
 
 
     }

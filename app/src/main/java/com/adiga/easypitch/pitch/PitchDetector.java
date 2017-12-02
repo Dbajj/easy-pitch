@@ -15,19 +15,22 @@ import org.apache.commons.math3.transform.TransformType;
 
 public class PitchDetector {
 
-    public static final double CUTOFF = 0.9;
+    public static final double CUTOFF = 0.3;
 
     public static double findPitch(double[] audioInput, final int SAMPLE_RATE) {
+
         double[] inputSDF = calculateSDF(audioInput);
 
         GraphCoordinate[] maxima = PeakFind.findMaxima(inputSDF);
 
         for (int i = 0; i < maxima.length; i++) {
+            System.out.println("X: " + maxima[i].getX() + "Y: " + maxima[i].getY());
             if(maxima[i].getY() > CUTOFF) {
                 return SAMPLE_RATE/maxima[i].getX();
             }
         }
         // TODO figure out wtf this will return if there is no viable max found.
+        System.out.println("Crap");
         return 0;
 
     }
