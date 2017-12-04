@@ -61,6 +61,43 @@ public class PitchDetector {
     }
 
 
+    private double[] fftAutoCorrelationFast(double[] input) {
+        double[] inputCentered = centerDoubleArray(input);
+
+        double[] zeroPadding  = new double[inputCentered.length];
+        for(int i = 0; i < zeroPadding.length; i++) {
+            zeroPadding[i] = 0.0;
+        }
+
+        double[] inputCenteredPadded = ArrayUtils.addAll(inputCentered,zeroPadding);
+
+        double[][] inputCenteredPaddedComplex = new double[2][inputCenteredPadded.length];
+
+        for (int i = 0; i < inputCenteredPadded.length; i++) {
+            inputCenteredPaddedComplex[0][i] = inputCenteredPadded[i];
+            inputCenteredPaddedComplex[1][i] = 0;
+        }
+
+
+        FFTCalc.transformInPlace(inputCenteredPaddedComplex,DftNormalization.STANDARD, TransformType.FORWARD);
+
+        calculateNormInPlace(inputCenteredPaddedComplex);
+
+        FFTCalc.transformInPlace(inputCenteredPaddedComplex,DftNormalization.STANDARD, TransformType.INVERSE);
+
+
+
+        double[] autoCovarianceReal = new double[inputCenteredPaddedComplex[0].length/2];
+
+        for (int i = 0; i < autoCovarianceReal.length; i++) {
+            autoCovarianceReal[i] = inputCenteredPaddedComplex[0][i];
+        }
+
+
+        return autoCovarianceReal;
+
+    }
+
 
     private Complex[] inputFFT;
     private double[] fftAutoCorrelation(double[] input) {
@@ -72,6 +109,7 @@ public class PitchDetector {
         }
 
         double[] inputCenteredPadded = ArrayUtils.addAll(inputCentered,zeroPadding);
+
 
 
         inputFFT = FFTCalc.transform(inputCenteredPadded, TransformType.FORWARD);
@@ -89,8 +127,6 @@ public class PitchDetector {
             autoCovarianceReal[i] = autoCovariance[i].getReal();
         }
 
-        inputFFT = null;
-        autoCovariance = null;
 
         return autoCovarianceReal;
 
@@ -98,6 +134,14 @@ public class PitchDetector {
 
     }
 
+
+    private void calculateNormInPlace(double[][] input) {
+
+        for (int i = 0; i < input[0].length; i++) {
+            input[0][i] = input[0][i]*input[0][i]+input[1][i]*input[1][i];
+            input[1][i] = 0;
+        }
+    }
     private Complex calculateNorm(Complex input) {
         return new Complex(input.getReal()*input.getReal()+input.getImaginary()*input.getImaginary(),0);
     }
@@ -128,7 +172,7 @@ public class PitchDetector {
     // !!! add description
     private double[] calculateSDF(double[] input) {
 
-        double[] inputACV = fftAutoCorrelation(input);
+        double[] inputACV = fftAutoCorrelationFast(input);
 
         double[] inputDivisors = sdfDivisor(input,inputACV);
 
@@ -136,6 +180,7 @@ public class PitchDetector {
 
         for (int i = 0 ; i < inputACV.length; i++) {
             sdf[i] = 2*inputACV[i]/inputDivisors[i];
+
         }
 
         return sdf;
