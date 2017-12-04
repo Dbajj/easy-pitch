@@ -19,7 +19,7 @@ allprojects {
     repositories {
         google()
         jcenter()
-        // https://mvnrepository.com/artifact/org.apache.commons/commons-math3
+        maven { url "https://jitpack.io" }
 
     }
 }

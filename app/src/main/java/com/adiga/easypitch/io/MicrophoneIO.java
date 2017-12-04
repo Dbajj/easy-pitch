@@ -37,7 +37,9 @@ public class MicrophoneIO {
 
     private static final int bufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE,CHANNELS,ENCODING);
 
-    private ArrayBlockingQueue audioInputQueue = new ArrayBlockingQueue(4096,true);
+
+    private double[] audioBuffer = new double[BUFFER_SIZE/2];
+    private boolean bufferRead = false;
 
     // TODO figure out what the constructor might need to do here, choose audio formats maybe?
     public MicrophoneIO() {
@@ -45,33 +47,33 @@ public class MicrophoneIO {
     }
 
 
-    public Queue getAudioInput() {
-        return audioInputQueue;
-    }
-
-
-    public void startRecording() {
-        recorder = new AudioRecord.Builder()
-                .setAudioSource(MediaRecorder.AudioSource.MIC)
-                .setAudioFormat(new AudioFormat.Builder()
-                        .setEncoding(ENCODING)
-                        .setSampleRate(SAMPLE_RATE)
-                        .setChannelMask(CHANNELS)
-                        .build())
-                .setBufferSizeInBytes(BUFFER_SIZE)
-                .build();
-
-        recorder.startRecording();
-        isRecording = true;
-
+    public double[] getSample() {
         recordingThread = new Thread(new Runnable() {
             public void run() {
                 readAudioDataToQueue();
+
             }
         }, "AudioRecorder Thread");
         recordingThread.start();
 
+        while(recordingThread.isAlive()) {
+
+        }
+
+        bufferRead = false;
+        return audioBuffer;
     }
+
+    public void startRecording() {
+
+        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,SAMPLE_RATE,CHANNELS,ENCODING,bufferSize);
+
+        recorder.startRecording();
+        isRecording = true;
+
+
+    }
+
 
     public void stopRecording() {
 
@@ -85,29 +87,20 @@ public class MicrophoneIO {
 
     }
 
-    int bufferElementsToRecord = 1024;
+    int bufferElementsToRecord = BUFFER_SIZE/2;
 
     private void readAudioDataToQueue() {
 
-        byte[] byteInputArray =  new byte[bufferElementsToRecord];
+        short[] shortInputArray = new short[bufferElementsToRecord];
 
-        while (isRecording) {
-            recorder.read(byteInputArray,0,bufferElementsToRecord);
-
-            double[] doubleInputArray = convertByteToDouble(byteInputArray);
-
-            try {
-                for (double d : doubleInputArray) {
-                    audioInputQueue.put(d);
-                }
-
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        recorder.read(shortInputArray,0,bufferElementsToRecord,AudioRecord.READ_BLOCKING);
 
 
-
+        for (int i = 0; i < shortInputArray.length; i++) {
+            audioBuffer[i] = shortInputArray[i];
         }
+
+        bufferRead = true;
 
     }
 
