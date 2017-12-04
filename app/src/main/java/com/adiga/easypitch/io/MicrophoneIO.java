@@ -4,16 +4,6 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 
-import org.apache.commons.collections4.queue.CircularFifoQueue;
-
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.DoubleBuffer;
-import java.util.ArrayList;
-import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Created by dbajj on 2017-11-28.
@@ -23,31 +13,32 @@ public class MicrophoneIO {
 
     private static final int SAMPLE_RATE = 44100;
     private static final int CHANNELS = AudioFormat.CHANNEL_IN_MONO;
-
     private static final int ENCODING  = AudioFormat.ENCODING_PCM_16BIT;
+    private static final int RECORD_BUFFER_SIZE = AudioRecord.getMinBufferSize(SAMPLE_RATE,CHANNELS,ENCODING);
+    private static final int OUTPUT_SAMPLE_SIZE = 4096;
 
     // TODO make this a bit more robust (what if encoding changes?
     private static final int BYTES_PER_ELEMENT = 2;
 
-    private static final int BUFFER_SIZE = 4096;
 
     private AudioRecord recorder = null;
     private Thread recordingThread = null;
     private boolean isRecording = false;
 
-    private static final int bufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE,CHANNELS,ENCODING);
-
-
-    private double[] audioBuffer = new double[BUFFER_SIZE/2];
-    private boolean bufferRead = false;
+    private double[] audioBuffer = new double[OUTPUT_SAMPLE_SIZE];
 
     // TODO figure out what the constructor might need to do here, choose audio formats maybe?
     public MicrophoneIO() {
-
+        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,SAMPLE_RATE,CHANNELS,ENCODING, RECORD_BUFFER_SIZE);
     }
 
-
+    // Retrieves a sample from recordingThread, using a new thread
     public double[] getSample() {
+
+        if(recorder.getRecordingState() != AudioRecord.RECORDSTATE_RECORDING) {
+            startRecording();
+        }
+
         recordingThread = new Thread(new Runnable() {
             public void run() {
                 readAudioDataToQueue();
@@ -59,19 +50,13 @@ public class MicrophoneIO {
         while(recordingThread.isAlive()) {
 
         }
-
-        bufferRead = false;
         return audioBuffer;
     }
 
     public void startRecording() {
 
-        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,SAMPLE_RATE,CHANNELS,ENCODING,bufferSize);
-
         recorder.startRecording();
         isRecording = true;
-
-
     }
 
 
@@ -87,20 +72,17 @@ public class MicrophoneIO {
 
     }
 
-    int bufferElementsToRecord = BUFFER_SIZE/2;
 
     private void readAudioDataToQueue() {
 
-        short[] shortInputArray = new short[bufferElementsToRecord];
+        short[] shortInputArray = new short[OUTPUT_SAMPLE_SIZE];
 
-        recorder.read(shortInputArray,0,bufferElementsToRecord,AudioRecord.READ_BLOCKING);
+        recorder.read(shortInputArray,0,OUTPUT_SAMPLE_SIZE,AudioRecord.READ_BLOCKING);
 
 
         for (int i = 0; i < shortInputArray.length; i++) {
             audioBuffer[i] = shortInputArray[i];
         }
-
-        bufferRead = true;
 
     }
 

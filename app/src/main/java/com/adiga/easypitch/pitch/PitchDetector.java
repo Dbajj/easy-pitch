@@ -25,7 +25,7 @@ import java.nio.file.Path;
 
 public class PitchDetector {
 
-    public static final double CUTOFF = 0.8;
+    public static final double CUTOFF = 0.83;
 
     private double[] inputSDF;
     private int sampleRate;
@@ -40,8 +40,8 @@ public class PitchDetector {
     public double findPitch(double[] audioInput) {
 
         inputSDF = calculateSDF(audioInput);
-
         GraphCoordinate[] maxima = PeakFind.findMaxima(inputSDF);
+
 
         inputSDF = null;
 
@@ -73,6 +73,7 @@ public class PitchDetector {
 
         double[][] inputCenteredPaddedComplex = new double[2][inputCenteredPadded.length];
 
+
         for (int i = 0; i < inputCenteredPadded.length; i++) {
             inputCenteredPaddedComplex[0][i] = inputCenteredPadded[i];
             inputCenteredPaddedComplex[1][i] = 0;
@@ -92,7 +93,6 @@ public class PitchDetector {
         for (int i = 0; i < autoCovarianceReal.length; i++) {
             autoCovarianceReal[i] = inputCenteredPaddedComplex[0][i];
         }
-
 
         return autoCovarianceReal;
 
@@ -176,9 +176,9 @@ public class PitchDetector {
 
         double[] inputDivisors = sdfDivisor(input,inputACV);
 
-        double[] sdf = new double[inputACV.length];
+        double[] sdf = new double[inputACV.length/2];
 
-        for (int i = 0 ; i < inputACV.length; i++) {
+        for (int i = 0 ; i < inputACV.length/2; i++) {
             sdf[i] = 2*inputACV[i]/inputDivisors[i];
 
         }
