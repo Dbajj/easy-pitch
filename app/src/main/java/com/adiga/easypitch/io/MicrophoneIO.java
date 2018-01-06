@@ -15,7 +15,7 @@ public class MicrophoneIO {
     private static final int CHANNELS = AudioFormat.CHANNEL_IN_MONO;
     private static final int ENCODING  = AudioFormat.ENCODING_PCM_16BIT;
     private static final int RECORD_BUFFER_SIZE = AudioRecord.getMinBufferSize(SAMPLE_RATE,CHANNELS,ENCODING);
-    private static final int OUTPUT_SAMPLE_SIZE = 4096*2;
+    private static final int OUTPUT_SAMPLE_SIZE = 4096;
 
     // TODO make this a bit more robust (what if encoding changes?
     private static final int BYTES_PER_ELEMENT = 2;

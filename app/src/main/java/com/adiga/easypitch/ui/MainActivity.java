@@ -39,7 +39,6 @@ public class MainActivity extends AppCompatActivity {
     private PitchRunnable mPitchRunnable;
 
 
-    private static final int PITCH_LOADER_ID = 22;
     private static final int PITCH_QUERY_DELAY = 20;
 
 

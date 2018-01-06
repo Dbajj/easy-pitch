@@ -10,11 +10,17 @@ import java.util.function.DoubleFunction;
 public class PeakFind {
 
 
+    private static GraphCoordinate max = new GraphCoordinate(0,0);
+
+
     // Finds all local maxima (as x,y pairs) after first zero crossing of input.
     // If no zero crossing, will return empty array
     public static GraphCoordinate[] findMaxima(double[] input) {
 
         ArrayList<GraphCoordinate> maxima = new ArrayList<GraphCoordinate>();
+        GraphCoordinate left = new GraphCoordinate(0,0);
+        GraphCoordinate center = new GraphCoordinate(0,0);
+        GraphCoordinate right = new GraphCoordinate(0,0);
 
         int zeroCrossing = 0;
 
@@ -27,21 +33,25 @@ public class PeakFind {
 
             if (input[i-1] < input[i] & input[i] > input[i+1])  {
 
-                GraphCoordinate max = parabolicInterpolate(new GraphCoordinate(i-1.0,input[i-1]),
-                        new GraphCoordinate(i*1.0,input[i]),
-                        new GraphCoordinate(i+1.0,input[i+1]));
+                left.setX(i-1.0);
+                left.setY(input[i-1]);
 
-                maxima.add(max);
+                center.setX(i*1.0);
+                center.setY(input[i]);
+
+                right.setX(i+1.0);
+                right.setY(input[i+1]);
+
+                parabolicInterpolate(left,center,right);
+
+                GraphCoordinate foundMax = new GraphCoordinate(max.getX(),max.getY());
+
+                maxima.add(foundMax);
+
             }
         }
 
-        GraphCoordinate[] maximaOut =  new GraphCoordinate[maxima.size()];
-
-        for (int i = 0; i < maxima.size(); i++) {
-            maximaOut[i] = maxima.get(i);
-        }
-
-        return maximaOut;
+        return maxima.toArray(new GraphCoordinate[0]);
 
     }
 
@@ -50,7 +60,7 @@ public class PeakFind {
     private static GraphCoordinate parabolicInterpolate(GraphCoordinate left, GraphCoordinate center, GraphCoordinate right) {
 
 
-        GraphCoordinate max = calcMax(left,center,right);
+        calcMax(left,center,right);
 
         while (Math.abs(max.getX() - center.getX()) >= 0.01) {
 
@@ -65,14 +75,14 @@ public class PeakFind {
 
             }
 
-            max = calcMax(left,center,right);
+            calcMax(left,center,right);
         }
 
         return max;
 
     }
 
-    private static GraphCoordinate calcMax(GraphCoordinate left, GraphCoordinate center, GraphCoordinate right) {
+    private static void calcMax(GraphCoordinate left, GraphCoordinate center, GraphCoordinate right) {
         double f_a = (double) left.getY();
         double f_b = (double) center.getY();
         double f_c = (double) right.getY();
@@ -89,7 +99,8 @@ public class PeakFind {
                 + f_c * (((x_max - a) * (x_max - b)) / ((c - a) * (c - b)));
 
 
-        return new GraphCoordinate(x_max,y_max);
+        max.setX(x_max);
+        max.setY(y_max);
     }
 
 
