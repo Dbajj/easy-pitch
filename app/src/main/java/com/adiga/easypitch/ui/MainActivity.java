@@ -9,7 +9,10 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -28,6 +31,16 @@ import java.util.concurrent.TimeUnit;
 public class MainActivity extends AppCompatActivity {
 
     TextView audioOutputTextID;
+    double mPitch;
+    MicrophoneIO microphoneIO;
+    PitchDetector pitchDetector;
+
+    private Handler mPitchHandler;
+    private PitchRunnable mPitchRunnable;
+
+
+    private static final int PITCH_LOADER_ID = 22;
+    private static final int PITCH_QUERY_DELAY = 20;
 
 
     @Override
@@ -37,7 +50,24 @@ public class MainActivity extends AppCompatActivity {
 
         getPermissions();
 
-        addAudioFragment();
+        audioOutputTextID = (TextView) findViewById(R.id.audio_sample);
+
+        microphoneIO = new MicrophoneIO();
+
+        pitchDetector = new PitchDetector(microphoneIO);
+
+        mPitchHandler = new Handler();
+
+        mPitchRunnable = new PitchRunnable();
+
+        monitorPitch();
+
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
 
     }
 
@@ -45,14 +75,27 @@ public class MainActivity extends AppCompatActivity {
     public void onResume() {
        super.onResume();
 
-        AudioFragment myAudio = (AudioFragment) getSupportFragmentManager().findFragmentByTag("audio_processor");
-
     }
 
-    public void openPlot(View view) {
-        Intent intent = new Intent(this, ScatterChartActivity.class);
-        startActivity(intent);
+    @Override
+    protected void onStop() {
+        super.onStop();
+        stopMonitorPitch();
+    }
 
+    private void monitorPitch() {
+        pitchDetector.startDetection();
+
+        mPitchHandler.post(mPitchRunnable);
+    }
+
+    private void stopMonitorPitch() {
+        mPitchHandler.removeCallbacks(mPitchRunnable);
+        pitchDetector.stopDetection();
+    }
+
+    private void updatePitch() {
+        audioOutputTextID.setText(String.valueOf(mPitch));
     }
 
     private void getPermissions() {
@@ -64,15 +107,20 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void addAudioFragment() {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+    public class PitchRunnable implements Runnable {
 
-        AudioFragment audioFragment = new AudioFragment();
+        @Override
+        public void run() {
+            pitchDetector.processPitch();
 
-        fragmentTransaction.add(audioFragment,"audio_processor");
+            mPitch = pitchDetector.getCurrentPitch();
 
-        fragmentTransaction.commit();
+            updatePitch();
 
+            mPitchHandler.postDelayed(this,PITCH_QUERY_DELAY);
+        }
     }
+
+
+
 }

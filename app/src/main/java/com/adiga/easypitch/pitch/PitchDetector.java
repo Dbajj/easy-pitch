@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Environment;
 import android.support.v4.os.EnvironmentCompat;
 
+import com.adiga.easypitch.io.MicrophoneIO;
 import com.adiga.easypitch.utils.GraphCoordinate;
 import com.adiga.easypitch.utils.PeakFind;
 
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.file.Path;
+import java.util.ArrayList;
 
 /**
  * Created by dbajj on 2017-11-27.
@@ -25,15 +27,82 @@ import java.nio.file.Path;
 
 public class PitchDetector {
 
-    public static final double CUTOFF = 0.83;
+    private static final double CUTOFF = 0.83;
+    private static final int RUNNING_AVERAGE_SIZE = 32;
 
     private double[] inputSDF;
     private int sampleRate;
 
     private FastFourierTransformer FFTCalc;
-    public PitchDetector(int SAMPLE_RATE) {
-        sampleRate = SAMPLE_RATE;
+    private MicrophoneIO mMicrophoneIO;
+    private double mCurrentPitch;
+    private double[] mAudioBuffer;
+    private ArrayList<Double> mPitchHistory;
+
+    public PitchDetector(MicrophoneIO io) {
+        sampleRate = io.getSampleRate();
         FFTCalc = new FastFourierTransformer(DftNormalization.STANDARD);
+        mMicrophoneIO = io;
+        mCurrentPitch = 0;
+        mPitchHistory = new ArrayList<Double>();
+    }
+
+    public double getCurrentPitch() {
+        return mCurrentPitch;
+    }
+
+    public void startDetection() {
+        if(mMicrophoneIO == null) {
+            throw(new NullPointerException());
+        }
+
+        if(!mMicrophoneIO.isRecording()) mMicrophoneIO.startRecording();
+
+
+    }
+
+    public void stopDetection() {
+        if(mMicrophoneIO == null) {
+            throw(new NullPointerException());
+        }
+
+        if(mMicrophoneIO.isRecording()) mMicrophoneIO.stopRecording();
+    }
+
+    public void processPitch() {
+        if(!mMicrophoneIO.isRecording()) startDetection();
+
+        mAudioBuffer = mMicrophoneIO.getSample();
+
+        double pitch = findPitch(mAudioBuffer);
+
+        if(pitch  == 0) {
+            mCurrentPitch = 0;
+            return;
+        } else if (mPitchHistory.size() == 0) {
+            mCurrentPitch = pitch;
+            mPitchHistory.add(mCurrentPitch);
+        } else if (mPitchHistory.size() < RUNNING_AVERAGE_SIZE) {
+            mPitchHistory.add(pitch);
+            mCurrentPitch = getAveragePitch();
+        } else {
+            mPitchHistory.remove(0);
+            mPitchHistory.add(pitch);
+            mCurrentPitch = getAveragePitch();
+        }
+
+    }
+
+    private double getAveragePitch() {
+        double sum = 0;
+        int count = 0;
+
+        for(double d : mPitchHistory) {
+            sum += d;
+            count++;
+        }
+
+        return sum/count;
     }
 
 

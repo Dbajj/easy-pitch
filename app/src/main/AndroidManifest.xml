@@ -19,9 +19,6 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ui.ScatterChartActivity">
-
-        </activity>
     </application>
 
 </manifest>

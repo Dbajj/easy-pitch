@@ -10,7 +10,6 @@ import java.util.function.DoubleFunction;
 public class PeakFind {
 
 
-
     // Finds all local maxima (as x,y pairs) after first zero crossing of input.
     // If no zero crossing, will return empty array
     public static GraphCoordinate[] findMaxima(double[] input) {

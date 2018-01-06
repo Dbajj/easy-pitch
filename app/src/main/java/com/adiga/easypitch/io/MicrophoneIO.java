@@ -15,7 +15,7 @@ public class MicrophoneIO {
     private static final int CHANNELS = AudioFormat.CHANNEL_IN_MONO;
     private static final int ENCODING  = AudioFormat.ENCODING_PCM_16BIT;
     private static final int RECORD_BUFFER_SIZE = AudioRecord.getMinBufferSize(SAMPLE_RATE,CHANNELS,ENCODING);
-    private static final int OUTPUT_SAMPLE_SIZE = 4096;
+    private static final int OUTPUT_SAMPLE_SIZE = 4096*2;
 
     // TODO make this a bit more robust (what if encoding changes?
     private static final int BYTES_PER_ELEMENT = 2;
@@ -27,7 +27,6 @@ public class MicrophoneIO {
 
     private double[] audioBuffer = new double[OUTPUT_SAMPLE_SIZE];
 
-    // TODO figure out what the constructor might need to do here, choose audio formats maybe?
     public MicrophoneIO() {
         recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,SAMPLE_RATE,CHANNELS,ENCODING, RECORD_BUFFER_SIZE);
     }
@@ -53,6 +52,10 @@ public class MicrophoneIO {
         return audioBuffer;
     }
 
+    public int getSampleRate() {
+        return SAMPLE_RATE;
+    }
+
     public void startRecording() {
 
         recorder.startRecording();
@@ -70,6 +73,10 @@ public class MicrophoneIO {
             recordingThread = null;
         }
 
+    }
+
+    public boolean isRecording() {
+        return isRecording;
     }
 
 
