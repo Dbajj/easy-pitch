@@ -19,6 +19,10 @@ public class PitchCalculator {
     private final int SAMPLE_RATE;
 
     private double[] inputSDF;
+    private double[] inputACV;
+    private double[] inputCentered;
+    private double[] inputDivisors;
+    private double[] zeroPadding;
     private FastFourierTransformer mFFTCalc;
 
     /**
@@ -26,10 +30,16 @@ public class PitchCalculator {
      * @param sampleRate the sampling rate used to collect audio input data that will be given
      *                   to the calculator (used to convert frequency to Hz)
      */
-    public PitchCalculator(int sampleRate) {
+    public PitchCalculator(int sampleRate, int sampleLength) {
         mFFTCalc = new FastFourierTransformer(DftNormalization.STANDARD);
         CUTOFF = PitchDetector.CUTOFF;
         SAMPLE_RATE = sampleRate;
+
+        inputACV = new double[sampleLength];
+        inputCentered = new double[sampleLength];
+        inputDivisors = new double[sampleLength];
+        inputSDF = new double[sampleLength];
+
     }
 
 
@@ -40,12 +50,10 @@ public class PitchCalculator {
      */
     public double findPitch(double[] audioInput) {
 
-        inputSDF = calculateSDF(audioInput);
+        calculateSDF(audioInput);
 
         try {
             List<GraphCoordinate> mMaxima = PeakFind.getInstance().findMaxima(inputSDF);
-
-            inputSDF = null;
 
             for (int i = 0; i < mMaxima.size()/2; i++) {
                 if(mMaxima.get(i).getY() > CUTOFF) {
@@ -66,8 +74,8 @@ public class PitchCalculator {
      * @param input an array of data to be inserted into the autocorrelation function
      * @return the autocorrelation function of the input, calculated using FFT
      */
-    private double[] fftAutoCorrelationFast(double[] input) {
-        double[] inputCentered = centerDoubleArray(input);
+    private void fftAutoCorrelationFast(double[] input) {
+        centerDoubleArray(input);
 
         double[] zeroPadding  = new double[inputCentered.length];
         for(int i = 0; i < zeroPadding.length; i++) {
@@ -93,13 +101,10 @@ public class PitchCalculator {
 
 
 
-        double[] autoCovarianceReal = new double[inputCenteredPaddedComplex[0].length/2];
 
-        for (int i = 0; i < autoCovarianceReal.length; i++) {
-            autoCovarianceReal[i] = inputCenteredPaddedComplex[0][i];
+        for (int i = 0; i < inputACV.length; i++) {
+            inputACV[i] = inputCenteredPaddedComplex[0][i];
         }
-
-        return autoCovarianceReal;
 
     }
 
@@ -128,24 +133,21 @@ public class PitchCalculator {
      * @param inputACV the autocorrelation function of input
      * @return an array of SDF divisor terms corresponding to elements in input
      */
-    private double[] sdfDivisor(double[] input ,double[] inputACV) {
-        double[] centeredInput = centerDoubleArray(input);
+    private void sdfDivisor(double[] input ,double[] inputACV) {
+        centerDoubleArray(input);
 
         double term_0  = inputACV[0];
 
-        double[] divisorTerms = new double[input.length];
-
-        divisorTerms[0] = 2*term_0;
+        inputDivisors[0] = 2*term_0;
 
         double currentTerm = 2*term_0;
 
         for (int i = 1; i < input.length; i++) {
-            currentTerm = currentTerm - Math.pow(centeredInput[i-1],2) - Math.pow(centeredInput[input.length-i],2);
+            currentTerm = currentTerm - Math.pow(inputCentered[i-1],2) - Math.pow(inputCentered[input.length-i],2);
 
-            divisorTerms[i] = currentTerm;
+            inputDivisors[i] = currentTerm;
         }
 
-        return divisorTerms;
     }
 
     /**
@@ -157,20 +159,15 @@ public class PitchCalculator {
      * @param input an array of real valued elements
      * @return the squared difference function for input
      */
-    private double[] calculateSDF(double[] input) {
+    private void calculateSDF(double[] input) {
 
-        double[] inputACV = fftAutoCorrelationFast(input);
+        fftAutoCorrelationFast(input);
 
-        double[] inputDivisors = sdfDivisor(input,inputACV);
-
-        double[] sdf = new double[inputACV.length/2];
+        sdfDivisor(input,inputACV);
 
         for (int i = 0 ; i < inputACV.length/2; i++) {
-            sdf[i] = 2*inputACV[i]/inputDivisors[i];
-
+            inputSDF[i] = 2*inputACV[i]/inputDivisors[i];
         }
-
-        return sdf;
     }
 
 
@@ -181,7 +178,7 @@ public class PitchCalculator {
      * @param input an array of input values of length >=0
      * @return an array of values in input centered around the average value of input
      */
-    private double[] centerDoubleArray(double[] input) {
+    private void centerDoubleArray(double[] input) {
         double sum = 0;
 
         for (double d : input) {
@@ -190,12 +187,9 @@ public class PitchCalculator {
 
         double mean = sum/(double)input.length;
 
-        double[] centeredInput = input.clone();
-
-        for (int i = 0; i < centeredInput.length; i ++) {
-            centeredInput[i] = centeredInput[i] - mean;
+        for (int i = 0; i < inputCentered.length; i ++) {
+            inputCentered[i] = input[i] - mean;
         }
-         return centeredInput;
     }
 
 

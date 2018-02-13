@@ -29,7 +29,7 @@ public class PitchDetector {
      * @param io - valid MicrophoneIO object corresponding to device microphone in
      */
     public PitchDetector(MicrophoneIO io) {
-        mPitchCalculator = new PitchCalculator(io.getSampleRate());
+        mPitchCalculator = new PitchCalculator(io.getSampleRate(),MicrophoneIO.OUTPUT_SAMPLE_SIZE);
         mMicrophoneIO = io;
         mCurrentPitch = 0;
         mPitchHistory = new PitchHistory(RUNNING_AVERAGE_SIZE);
