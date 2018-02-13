@@ -8,6 +8,8 @@ import org.apache.commons.math3.transform.DftNormalization;
 import org.apache.commons.math3.transform.FastFourierTransformer;
 import org.apache.commons.math3.transform.TransformType;
 
+import java.util.List;
+
 /**
  * Created by dbajj on 2018-01-24.
  */
@@ -39,19 +41,24 @@ public class PitchCalculator {
     public double findPitch(double[] audioInput) {
 
         inputSDF = calculateSDF(audioInput);
-        GraphCoordinate[] maxima = PeakFind.findMaxima(inputSDF);
 
+        try {
+            List<GraphCoordinate> mMaxima = PeakFind.getInstance().findMaxima(inputSDF);
 
-        inputSDF = null;
+            inputSDF = null;
 
-        for (int i = 0; i < maxima.length/2; i++) {
-            if(maxima[i].getY() > CUTOFF) {
-                return SAMPLE_RATE/maxima[i].getX();
+            for (int i = 0; i < mMaxima.size()/2; i++) {
+                if(mMaxima.get(i).getY() > CUTOFF) {
+                    double output = SAMPLE_RATE/mMaxima.get(i).getX();
+                    return output;
+                }
             }
+        } finally {
+            PeakFind.getInstance().clearMaxima();
         }
-        // TODO figure out wtf this will return if there is no viable max found.
-        return 0;
 
+        // TODO figure out what this will return if there is no viable max found.
+        return 0;
     }
 
 

@@ -17,7 +17,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.adiga.easypitch.R;
 import com.adiga.easypitch.io.MicrophoneIO;
@@ -31,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 public class MainActivity extends AppCompatActivity {
 
     TextView audioOutputTextID;
+    Button responseButton;
     double mPitch;
     MicrophoneIO microphoneIO;
     PitchDetector pitchDetector;
@@ -50,6 +53,14 @@ public class MainActivity extends AppCompatActivity {
         getPermissions();
 
         audioOutputTextID = (TextView) findViewById(R.id.audio_sample);
+        responseButton = (Button) findViewById(R.id.response_button);
+
+        responseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(getApplicationContext(),"Heyo",Toast.LENGTH_SHORT).show();
+            }
+        });
 
         microphoneIO = new MicrophoneIO();
 
