@@ -23,6 +23,7 @@ public class PitchCalculator {
     private double[] inputCentered;
     private double[] inputDivisors;
     private double[] zeroPadding;
+    private double[][] inputCenteredPaddedComplex;
     private FastFourierTransformer mFFTCalc;
 
     /**
@@ -39,7 +40,8 @@ public class PitchCalculator {
         inputCentered = new double[sampleLength];
         inputDivisors = new double[sampleLength];
         inputSDF = new double[sampleLength];
-
+        zeroPadding = new double[sampleLength];
+        inputCenteredPaddedComplex = new double[2][sampleLength*2];
     }
 
 
@@ -77,19 +79,15 @@ public class PitchCalculator {
     private void fftAutoCorrelationFast(double[] input) {
         centerDoubleArray(input);
 
-        double[] zeroPadding  = new double[inputCentered.length];
-        for(int i = 0; i < zeroPadding.length; i++) {
-            zeroPadding[i] = 0.0;
+
+        for (int i = 0; i < inputCentered.length; i++) {
+            inputCenteredPaddedComplex[0][i] = inputCentered[i];
+            inputCenteredPaddedComplex[1][i] = 0;
         }
 
-        double[] inputCenteredPadded = ArrayUtils.addAll(inputCentered,zeroPadding);
-
-        double[][] inputCenteredPaddedComplex = new double[2][inputCenteredPadded.length];
-
-
-        for (int i = 0; i < inputCenteredPadded.length; i++) {
-            inputCenteredPaddedComplex[0][i] = inputCenteredPadded[i];
-            inputCenteredPaddedComplex[1][i] = 0;
+        for (int i = 0; i < zeroPadding.length; i++) {
+            inputCenteredPaddedComplex[0][i+inputCentered.length] = zeroPadding[i];
+            inputCenteredPaddedComplex[1][i+inputCentered.length] = zeroPadding[i];
         }
 
 
@@ -98,7 +96,6 @@ public class PitchCalculator {
         calculateNormInPlace(inputCenteredPaddedComplex);
 
         mFFTCalc.transformInPlace(inputCenteredPaddedComplex,DftNormalization.STANDARD, TransformType.INVERSE);
-
 
 
 

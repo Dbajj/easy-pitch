@@ -40,8 +40,6 @@ public class PitchHistory {
         }
 
         String compare = farValue(d);
-        Log.d("PitchHistoryAdd",compare);
-        Log.d("PitchHistoryAvg",String.valueOf(getAverage()));
 
         switch(compare) {
             case(CLEAR_HISTORY):
