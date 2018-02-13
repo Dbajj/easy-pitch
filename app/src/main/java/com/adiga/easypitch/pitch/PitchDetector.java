@@ -2,7 +2,11 @@ package com.adiga.easypitch.pitch;
 
 
 import com.adiga.easypitch.io.MicrophoneIO;
+
 import java.util.ArrayList;
+import java.util.Queue;
+
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 
 /**
  * Created by dbajj on 2017-11-27.
@@ -11,13 +15,13 @@ import java.util.ArrayList;
 public class PitchDetector {
 
     public static final double CUTOFF = 0.83;
-    private static final int RUNNING_AVERAGE_SIZE = 32;
+    private static final int RUNNING_AVERAGE_SIZE = 16;
 
     private PitchCalculator mPitchCalculator;
     private MicrophoneIO mMicrophoneIO;
     private double mCurrentPitch;
     private double[] mAudioBuffer;
-    private ArrayList<Double> mPitchHistory;
+    private PitchHistory mPitchHistory;
 
     /**
      * Initializes new PitchDetector with given microphone input
@@ -28,7 +32,7 @@ public class PitchDetector {
         mPitchCalculator = new PitchCalculator(io.getSampleRate());
         mMicrophoneIO = io;
         mCurrentPitch = 0;
-        mPitchHistory = new ArrayList<Double>();
+        mPitchHistory = new PitchHistory(RUNNING_AVERAGE_SIZE);
     }
 
     /**
@@ -68,9 +72,6 @@ public class PitchDetector {
     /**
      * Collects a sample of audio from mMicrophoneIO, calculates the pitch, and adds
      * pitch to the running average.
-     *
-     * Then recalculates the average pitch over the last RUNNING_AVERAGE_SIZE observations,
-     * and assigns that value to be the new current pitch.
      */
     public void processPitch() {
         if(!mMicrophoneIO.isRecording()) startDetection();
@@ -79,41 +80,8 @@ public class PitchDetector {
 
         double pitch = mPitchCalculator.findPitch(mAudioBuffer);
 
-        if(pitch  == 0) {
-            mCurrentPitch = 0;
-            return;
-        } else if (mPitchHistory.size() == 0) {
-            mCurrentPitch = pitch;
-            mPitchHistory.add(mCurrentPitch);
-        } else if (mPitchHistory.size() < RUNNING_AVERAGE_SIZE) {
-            mPitchHistory.add(pitch);
-            mCurrentPitch = getAveragePitch();
-        } else {
-            mPitchHistory.remove(0);
-            mPitchHistory.add(pitch);
-            mCurrentPitch = getAveragePitch();
-        }
-
+        mCurrentPitch = mPitchHistory.add(pitch);
     }
-
-    /**
-     *
-     * @return the current average pitch from all entries in mPitchHistory
-     */
-    private double getAveragePitch() {
-        double sum = 0;
-        int count = 0;
-
-        for(double d : mPitchHistory) {
-            sum += d;
-            count++;
-        }
-
-        return sum/count;
-    }
-
-
-
 
 
 }
