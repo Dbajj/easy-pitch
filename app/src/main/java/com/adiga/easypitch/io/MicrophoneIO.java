@@ -85,9 +85,6 @@ public class MicrophoneIO {
         if (null != recorder) {
             isRecording = false;
             recorder.stop();
-            recorder.release();
-            recorder = null;
-            recordingThread = null;
         }
 
     }

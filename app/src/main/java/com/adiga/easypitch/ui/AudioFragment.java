@@ -1,5 +1,6 @@
 package com.adiga.easypitch.ui;
 
+import android.animation.ObjectAnimator;
 import android.media.MediaScannerConnection;
 import android.os.Bundle;
 import android.os.Handler;
@@ -27,6 +28,9 @@ public class AudioFragment extends Fragment {
     private Handler audioHandler;
     private MicrophoneIO audioInput;
 
+    private StringView string;
+    private float currentOffset;
+
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
@@ -39,17 +43,25 @@ public class AudioFragment extends Fragment {
 
         audioHandler = new Handler();
 
+        string = getActivity().findViewById(R.id.guitar_string);
+
+        currentOffset = 0;
 
     }
 
     @Override
     public void onStart() {
         super.onStart();
+        audioInput.startRecording();
         audioHandler.post(new Runnable() {
             double[] audioBuffer;
 
             @Override
             public void run() {
+                ObjectAnimator animation = ObjectAnimator.ofFloat(string,"CurveOffset",currentOffset%1);
+                currentOffset += 0.1;
+                animation.setDuration(1000);
+                animation.start();
                 audioBuffer = audioInput.getSample();
                 pitchString = String.valueOf(pitchDetector.findPitch(audioBuffer)) + "\n";
 
@@ -64,5 +76,6 @@ public class AudioFragment extends Fragment {
     public void onPause() {
         super.onPause();
         audioHandler.removeCallbacksAndMessages(null);
+        audioInput.stopRecording();
     }
 }
