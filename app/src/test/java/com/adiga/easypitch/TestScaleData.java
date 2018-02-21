@@ -31,5 +31,14 @@ public class TestScaleData {
 
         assertEquals(7902.13,B8_freq,0.1);
     }
+
+    @Test
+    public void testSearch() {
+        double B8_freq_offset_up = ScaleData.NOTE_FREQUENCIES.get("B8")+ScaleData.NOTE_STEP*0.49;
+        double B8_freq_offset_down = ScaleData.NOTE_FREQUENCIES.get("B8")-ScaleData.NOTE_STEP*0.49;
+
+        assertEquals(ScaleData.NOTE_FREQUENCIES.get("B8"),ScaleData.findClosestPitch(B8_freq_offset_down),0);
+        assertEquals(ScaleData.NOTE_FREQUENCIES.get("B8"),ScaleData.findClosestPitch(B8_freq_offset_up),0);
+    }
 }
 

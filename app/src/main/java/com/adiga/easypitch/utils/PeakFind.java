@@ -93,8 +93,6 @@ public class PeakFind {
     }
 
     public void clearMaxima() {
-        System.out.println("SOme other shit");
-
         for(GraphCoordinate g : maxima) {
             coordinatePool.release(g);
             // TODO figure out why this is only clearing a space every other loop
@@ -102,7 +100,6 @@ public class PeakFind {
 
         maxima.clear();
 
-        System.out.println("Some shit");
     }
 
 

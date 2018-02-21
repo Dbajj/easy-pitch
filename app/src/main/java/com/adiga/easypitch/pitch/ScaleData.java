@@ -1,7 +1,8 @@
 package com.adiga.easypitch.pitch;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 
 /**
  * Created by dbajj on 2018-02-13.
@@ -10,24 +11,30 @@ import java.util.Map;
 public final class ScaleData {
 
     private static final double A4 = 440;
-    private static final double STEP = Math.pow(2,1/12.0);
+    public static final double NOTE_STEP = Math.pow(2,1/12.0);
     private static double[] frequencies = new double[12*9];
-    public static final Map<String,Double> NOTE_FREQUENCIES = generateFrequencies();
+    public static final NavigableMap<String,Double> NOTE_FREQUENCIES;
+    private static Double[] NOTE_FREQUENCIES_ARRAY;
 
+    static {
+        NOTE_FREQUENCIES = generateFrequencies();
+        NOTE_FREQUENCIES_ARRAY = NOTE_FREQUENCIES.values().toArray(new Double[0]);
 
+        Arrays.sort(NOTE_FREQUENCIES_ARRAY);
+    }
 
-    private static Map<String,Double> generateFrequencies() {
-        Map<String,Double> noteFrequencies = new HashMap<String,Double>();
+    private static NavigableMap<String,Double> generateFrequencies() {
+        NavigableMap<String,Double> noteFrequencies = new TreeMap<String,Double>();
 
         frequencies[57] = A4;
 
         for(int i = 56; i >= 0; i--) {
-            double frequency = frequencies[i+1]/STEP;
+            double frequency = frequencies[i+1]/ NOTE_STEP;
             frequencies[i] = frequency;
         }
 
         for(int i = 58; i < 12*9; i++) {
-            double frequency = frequencies[i-1]*STEP;
+            double frequency = frequencies[i-1]* NOTE_STEP;
             frequencies[i] = frequency;
         }
 
@@ -77,5 +84,8 @@ public final class ScaleData {
 
         return noteFrequencies;
     }
+
+
+
 
 }
