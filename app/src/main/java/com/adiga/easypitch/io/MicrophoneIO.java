@@ -11,25 +11,41 @@ import android.media.MediaRecorder;
 
 public class MicrophoneIO {
 
-    private static final int SAMPLE_RATE = 44100;
+    private int mSampleRate;
+    private int mRecordBufferSize;
     private static final int CHANNELS = AudioFormat.CHANNEL_IN_MONO;
     private static final int ENCODING  = AudioFormat.ENCODING_PCM_16BIT;
-    private static final int RECORD_BUFFER_SIZE = AudioRecord.getMinBufferSize(SAMPLE_RATE,CHANNELS,ENCODING);
     private static final int OUTPUT_SAMPLE_SIZE = 4096;
 
     // TODO make this a bit more robust (what if encoding changes?
     private static final int BYTES_PER_ELEMENT = 2;
 
-
-    private AudioRecord recorder = null;
-    private Thread recordingThread = null;
+    private AudioRecord recorder;
+    private Thread recordingThread;
     private boolean isRecording = false;
 
     private double[] audioBuffer = new double[OUTPUT_SAMPLE_SIZE];
 
-    // TODO figure out what the constructor might need to do here, choose audio formats maybe?
     public MicrophoneIO() {
-        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,SAMPLE_RATE,CHANNELS,ENCODING, RECORD_BUFFER_SIZE);
+        mSampleRate = getSampleRate();
+        mRecordBufferSize = AudioRecord.getMinBufferSize(mSampleRate,CHANNELS,ENCODING);
+        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,mSampleRate,CHANNELS,ENCODING, mRecordBufferSize);
+    }
+
+    private int getSampleRate() {
+        int max_rate = 0;
+        int[] rates = new int[]{8000,11025,16000,22050,44100,48000};
+
+        for(int rate : rates) {
+            int bufferSize = AudioRecord.getMinBufferSize(rate,CHANNELS,ENCODING);
+            if(bufferSize > 0 && rate > max_rate) {
+                max_rate = rate;
+            }
+        }
+
+        if(max_rate == 0) throw new UnsupportedOperationException("No valid audio sampling rate found");
+
+        return max_rate;
     }
 
     // Retrieves a sample from recordingThread, using a new thread

@@ -21,6 +21,8 @@ public class AudioFragment extends Fragment {
 
     private static final int PITCH_QUERY_DELAY = 100;
 
+
+
     private String pitchString;
     private PitchDetector pitchDetector;
 
@@ -48,12 +50,11 @@ public class AudioFragment extends Fragment {
                 handler.postDelayed(this, PITCH_QUERY_DELAY);
             }
         });
-
-
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
 
-
-
-
+    }
 }
