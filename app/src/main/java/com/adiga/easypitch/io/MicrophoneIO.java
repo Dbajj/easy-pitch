@@ -27,12 +27,12 @@ public class MicrophoneIO {
     private double[] audioBuffer = new double[OUTPUT_SAMPLE_SIZE];
 
     public MicrophoneIO() {
-        mSampleRate = getSampleRate();
+        mSampleRate = findSampleRate();
         mRecordBufferSize = AudioRecord.getMinBufferSize(mSampleRate,CHANNELS,ENCODING);
         recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,mSampleRate,CHANNELS,ENCODING, mRecordBufferSize);
     }
 
-    private int getSampleRate() {
+    private int findSampleRate() {
         int max_rate = 0;
         int[] rates = new int[]{8000,11025,16000,22050,44100,48000};
 
@@ -46,6 +46,10 @@ public class MicrophoneIO {
         if(max_rate == 0) throw new UnsupportedOperationException("No valid audio sampling rate found");
 
         return max_rate;
+    }
+
+    public int getSampleRate() {
+        return mSampleRate;
     }
 
     // Retrieves a sample from recordingThread, using a new thread
@@ -101,6 +105,7 @@ public class MicrophoneIO {
         }
 
     }
+
 
     //TODO make this work with a variety of encoding formats
     private double[] convertByteToDouble(byte[] inputAudioByteArray) {

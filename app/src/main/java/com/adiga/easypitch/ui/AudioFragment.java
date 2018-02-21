@@ -21,23 +21,31 @@ public class AudioFragment extends Fragment {
 
     private static final int PITCH_QUERY_DELAY = 100;
 
-
-
     private String pitchString;
     private PitchDetector pitchDetector;
+
+    private Handler audioHandler;
+    private MicrophoneIO audioInput;
+
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        MicrophoneIO audioInput = new MicrophoneIO();
+        audioInput = new MicrophoneIO();
 
         audioOutputTextID = getActivity().findViewById(R.id.audio_sample);
-        pitchDetector = new PitchDetector(44100);
+        pitchDetector = new PitchDetector(audioInput.getSampleRate());
 
-        Handler handler = new Handler();
+        audioHandler = new Handler();
 
-        handler.post(new Runnable() {
+
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        audioHandler.post(new Runnable() {
             double[] audioBuffer;
 
             @Override
@@ -47,7 +55,7 @@ public class AudioFragment extends Fragment {
 
                 audioOutputTextID.setText(pitchString);
 
-                handler.postDelayed(this, PITCH_QUERY_DELAY);
+                audioHandler.postDelayed(this, PITCH_QUERY_DELAY);
             }
         });
     }
@@ -55,6 +63,6 @@ public class AudioFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-
+        audioHandler.removeCallbacksAndMessages(null);
     }
 }
