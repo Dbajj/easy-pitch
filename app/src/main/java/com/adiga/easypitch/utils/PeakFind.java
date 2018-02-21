@@ -4,19 +4,52 @@ package com.adiga.easypitch.utils;
  * Created by dbajj on 2017-11-27.
  */
 
+import android.support.v4.util.Pools;
+import android.util.DebugUtils;
+import android.util.Log;
+
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.function.DoubleFunction;
 
 public class PeakFind {
 
+    private static final int MAX_POOL_SIZE = 5000;
+
+    private GraphCoordinate max;
+    private GraphCoordinate left;
+    private GraphCoordinate center;
+    private GraphCoordinate right;
+
+    private static final PeakFind INSTANCE = new PeakFind();
+
+    private List<GraphCoordinate> maxima;
+    private GraphCoordinatePool coordinatePool;
+
+
+
+    public static PeakFind getInstance() {
+        return INSTANCE;
+    }
+
+    private PeakFind() {
+        max = new GraphCoordinate(0,0);
+        left = new GraphCoordinate(0,0);
+        center = new GraphCoordinate(0,0);
+        right = new GraphCoordinate(0,0);
+
+        maxima = new ArrayList<GraphCoordinate>();
+        coordinatePool = new GraphCoordinatePool(MAX_POOL_SIZE);
+
+
+    }
 
 
     // Finds all local maxima (as x,y pairs) after first zero crossing of input.
     // If no zero crossing, will return empty array
-    public static GraphCoordinate[] findMaxima(double[] input) {
-
-        ArrayList<GraphCoordinate> maxima = new ArrayList<GraphCoordinate>();
-
+    public synchronized List<GraphCoordinate> findMaxima(double[] input) {
         int zeroCrossing = 0;
 
         for (int i = 1; i < input.length - 1; i++) {
@@ -28,30 +61,57 @@ public class PeakFind {
 
             if (input[i-1] < input[i] & input[i] > input[i+1])  {
 
-                GraphCoordinate max = parabolicInterpolate(new GraphCoordinate(i-1.0,input[i-1]),
-                        new GraphCoordinate(i*1.0,input[i]),
-                        new GraphCoordinate(i+1.0,input[i+1]));
+                left.setX(i-1.0);
+                left.setY(input[i-1]);
 
-                maxima.add(max);
+                center.setX(i*1.0);
+                center.setY(input[i]);
+
+                right.setX(i+1.0);
+                right.setY(input[i+1]);
+
+                parabolicInterpolate();
+
+                GraphCoordinate foundMax = null;
+                try {
+                    foundMax = coordinatePool.acquire();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                foundMax.setX(max.getX());
+                foundMax.setY(max.getY());
+
+                maxima.add(foundMax);
+
             }
         }
 
-        GraphCoordinate[] maximaOut =  new GraphCoordinate[maxima.size()];
 
-        for (int i = 0; i < maxima.size(); i++) {
-            maximaOut[i] = maxima.get(i);
-        }
-
-        return maximaOut;
+        return maxima;
 
     }
 
+    public void clearMaxima() {
+        System.out.println("SOme other shit");
+
+        for(GraphCoordinate g : maxima) {
+            coordinatePool.release(g);
+            // TODO figure out why this is only clearing a space every other loop
+        }
+
+        maxima.clear();
+
+        System.out.println("Some shit");
+    }
+
+
+
     // Produces the x,y coordinate of maximum between left, center, right using parabolic interpolation
     // based off of a lagrange polynomial drawn between the three points
-    private static GraphCoordinate parabolicInterpolate(GraphCoordinate left, GraphCoordinate center, GraphCoordinate right) {
+    private GraphCoordinate parabolicInterpolate() {
 
-
-        GraphCoordinate max = calcMax(left,center,right);
+        calcMax();
 
         while (Math.abs(max.getX() - center.getX()) >= 0.01) {
 
@@ -66,14 +126,14 @@ public class PeakFind {
 
             }
 
-            max = calcMax(left,center,right);
+            calcMax();
         }
 
         return max;
 
     }
 
-    private static GraphCoordinate calcMax(GraphCoordinate left, GraphCoordinate center, GraphCoordinate right) {
+    private void calcMax() {
         double f_a = (double) left.getY();
         double f_b = (double) center.getY();
         double f_c = (double) right.getY();
@@ -90,7 +150,8 @@ public class PeakFind {
                 + f_c * (((x_max - a) * (x_max - b)) / ((c - a) * (c - b)));
 
 
-        return new GraphCoordinate(x_max,y_max);
+        max.setX(x_max);
+        max.setY(y_max);
     }
 
 

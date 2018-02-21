@@ -73,6 +73,8 @@ public class MicrophoneIO {
         return audioBuffer;
     }
 
+
+
     public void startRecording() {
 
         recorder.startRecording();
@@ -87,6 +89,10 @@ public class MicrophoneIO {
             recorder.stop();
         }
 
+    }
+
+    public boolean isRecording() {
+        return isRecording;
     }
 
 
