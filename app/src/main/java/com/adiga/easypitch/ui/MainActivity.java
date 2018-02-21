@@ -26,6 +26,7 @@ import android.widget.Toast;
 import com.adiga.easypitch.R;
 import com.adiga.easypitch.io.MicrophoneIO;
 import com.adiga.easypitch.pitch.PitchDetector;
+import com.adiga.easypitch.pitch.ScaleData;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -104,11 +105,12 @@ public class MainActivity extends AppCompatActivity {
     private void updatePitch() {
         audioOutputTextID.setText(String.valueOf(mPitch));
 
-        if(animator != null && animator.isRunning()) Log.d("MainActivity","Still running!");
-        animator = ObjectAnimator.ofFloat(mGuitarString,"CurveOffset",offset%1);
+        offset = (float)ScaleData.getOffset(mPitch);
 
-        offset += 0.01;
-        animator.setDuration(1000);
+        if(animator != null && animator.isRunning()) Log.d("MainActivity","Still running!");
+        animator = ObjectAnimator.ofFloat(mGuitarString,"CurveOffset",offset);
+
+        animator.setDuration(10);
 
         animator.start();
 
