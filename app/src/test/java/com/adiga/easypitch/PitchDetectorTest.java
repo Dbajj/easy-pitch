@@ -1,7 +1,6 @@
 package com.adiga.easypitch;
 
-import com.adiga.easypitch.pitch.PitchCalculator;
-import com.adiga.easypitch.pitch.PitchDetector;
+import com.adiga.easypitch.pitch.MPMCalculator;
 
 import org.junit.Test;
 
@@ -21,7 +20,7 @@ public class PitchDetectorTest {
             input1[i] = i % 40;
         }
 
-        PitchCalculator pitchCalculator = new PitchCalculator(40*40,4096);
+        MPMCalculator pitchCalculator = new MPMCalculator(40*40,4096);
 
 
         assertEquals(40, pitchCalculator.findPitch(input1),0.1);
@@ -36,7 +35,7 @@ public class PitchDetectorTest {
             input2[i] = Math.sin(Math.PI*2*i/1000);
         }
 
-        PitchCalculator pitchCalculator = new PitchCalculator(1000*1000,4096);
+        MPMCalculator pitchCalculator = new MPMCalculator(1000*1000,4096);
         assertEquals(1000,pitchCalculator.findPitch(input2),0.1);
     }
 

@@ -3,11 +3,6 @@ package com.adiga.easypitch.pitch;
 
 import com.adiga.easypitch.io.MicrophoneIO;
 
-import java.util.ArrayList;
-import java.util.Queue;
-
-import org.apache.commons.collections4.queue.CircularFifoQueue;
-
 /**
  * Created by dbajj on 2017-11-27.
  */
@@ -29,7 +24,7 @@ public class PitchDetector {
      * @param io - valid MicrophoneIO object corresponding to device microphone in
      */
     public PitchDetector(MicrophoneIO io) {
-        mPitchCalculator = new PitchCalculator(io.getSampleRate(),MicrophoneIO.OUTPUT_SAMPLE_SIZE);
+        mPitchCalculator = new MPMCalculator(io.getSampleRate(),MicrophoneIO.OUTPUT_SAMPLE_SIZE);
         mMicrophoneIO = io;
         mCurrentPitch = 0;
         mPitchHistory = new PitchHistory(RUNNING_AVERAGE_SIZE);
