@@ -22,6 +22,7 @@ public class PitchHistory {
 
     private static final double FAR_CUTOFF = 20;
     private static final double CLEAR_CUTOFF = 5;
+    private static final double MULTIPLE_CUTOFF = 0.05;
 
     private int mDifferenceCount;
     private Queue<Double> mCircularQueue;
@@ -35,6 +36,10 @@ public class PitchHistory {
     }
 
     public double add(Double d) {
+
+        if(d < ScaleData.getNoteFrequency("E2")*0.95 || d > ScaleData.getNoteFrequency("E4")*1.05) {
+            return getAverage();
+        }
         if(d == 0) {
             return getAverage();
         }
@@ -43,6 +48,8 @@ public class PitchHistory {
 
         switch(compare) {
             case(CLEAR_HISTORY):
+                Log.d("PitchHistory",String.valueOf(d));
+                Log.d("PitchHistory",String.valueOf(getAverage()));
                 mCircularQueue.clear();
                 mCircularQueue.add(d);
                 return getAverage();
@@ -78,13 +85,37 @@ public class PitchHistory {
         if(difference > FAR_CUTOFF && mDifferenceCount > CLEAR_CUTOFF) {
             mDifferenceCount = 0;
             return CLEAR_HISTORY;
-        } else if (difference > FAR_CUTOFF) {
+        } else if (difference > FAR_CUTOFF && !isMultiple(d)) {
             mDifferenceCount++;
+            return FAR_VALUE;
+        } else if (difference > FAR_CUTOFF) {
             return FAR_VALUE;
         } else {
             mDifferenceCount = 0;
             return CLOSE_VALUE;
         }
+    }
+
+    private boolean isMultiple(Double d) {
+
+        for(int i = -1; i < 2; i++) {
+            if(i == 0) continue;
+
+            double multiple_2 = Math.pow(2,i)*d;
+            double multiple_3 = Math.pow(3,i)*d;
+
+            if(Math.abs((multiple_2-getAverage())/getAverage()) < MULTIPLE_CUTOFF) {
+                return true;
+            }
+
+            if(Math.abs((multiple_3-getAverage())/getAverage()) < MULTIPLE_CUTOFF) {
+                return true;
+            }
+        }
+
+
+
+        return false;
     }
 
 

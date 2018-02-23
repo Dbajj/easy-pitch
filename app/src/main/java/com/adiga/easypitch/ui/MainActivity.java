@@ -41,6 +41,8 @@ public class MainActivity extends AppCompatActivity {
     private PitchRunnable mPitchRunnable;
     private StringView mGuitarString;
 
+    private TextView instant_audio;
+
     private float offset = 0;
 
     private ObjectAnimator animator;
@@ -57,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
         getPermissions();
 
         audioOutputTextID = (TextView) findViewById(R.id.audio_sample);
+        instant_audio  = findViewById(R.id.instant_audio);
 
         mGuitarString = findViewById(R.id.guitar_string);
 
@@ -82,7 +85,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onResume() {
        super.onResume();
-       monitorPitch();
+       if(checkPermissions()) {
+           monitorPitch();
+       }
     }
 
     @Override
@@ -107,7 +112,6 @@ public class MainActivity extends AppCompatActivity {
 
         offset = (float)ScaleData.getOffset(mPitch);
 
-        if(animator != null && animator.isRunning()) Log.d("MainActivity","Still running!");
         animator = ObjectAnimator.ofFloat(mGuitarString,"CurveOffset",offset);
 
         animator.setDuration(10);
@@ -128,6 +132,10 @@ public class MainActivity extends AppCompatActivity {
         } else {
             setupAudio();
         }
+    }
+
+    private boolean checkPermissions() {
+        return ActivityCompat.checkSelfPermission(this,Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
     }
 
     @Override
@@ -151,6 +159,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void run() {
             pitchDetector.processPitch();
+
+            instant_audio.setText(String.valueOf(pitchDetector.instant_pitch));
+
+
 
             mPitch = pitchDetector.getCurrentPitch();
 

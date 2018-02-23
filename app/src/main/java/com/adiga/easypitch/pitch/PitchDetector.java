@@ -1,6 +1,8 @@
 package com.adiga.easypitch.pitch;
 
 
+import android.widget.TextView;
+
 import com.adiga.easypitch.io.MicrophoneIO;
 
 /**
@@ -9,8 +11,8 @@ import com.adiga.easypitch.io.MicrophoneIO;
 
 public class PitchDetector {
 
-    public static final double CUTOFF = 0.83;
-    private static final int RUNNING_AVERAGE_SIZE = 16;
+    public static final double CUTOFF = 0.75;
+    private static final int RUNNING_AVERAGE_SIZE = 64;
 
     private PitchCalculator mPitchCalculator;
     private MicrophoneIO mMicrophoneIO;
@@ -18,13 +20,15 @@ public class PitchDetector {
     private double[] mAudioBuffer;
     private PitchHistory mPitchHistory;
 
+    public double instant_pitch;
+
     /**
      * Initializes new PitchDetector with given microphone input
      *
      * @param io - valid MicrophoneIO object corresponding to device microphone in
      */
     public PitchDetector(MicrophoneIO io) {
-        mPitchCalculator = new WaveletCalculator(io.getSampleRate(),MicrophoneIO.OUTPUT_SAMPLE_SIZE);
+        mPitchCalculator = new MPMCalculator(io.getSampleRate(),MicrophoneIO.OUTPUT_SAMPLE_SIZE);
         mMicrophoneIO = io;
         mCurrentPitch = 0;
         mPitchHistory = new PitchHistory(RUNNING_AVERAGE_SIZE);
@@ -74,6 +78,8 @@ public class PitchDetector {
         mAudioBuffer = mMicrophoneIO.getSample();
 
         double pitch = mPitchCalculator.findPitch(mAudioBuffer);
+
+        instant_pitch = pitch;
 
         mCurrentPitch = mPitchHistory.add(pitch);
     }

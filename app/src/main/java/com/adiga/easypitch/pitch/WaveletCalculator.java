@@ -12,7 +12,7 @@ import java.util.List;
 public class WaveletCalculator implements PitchCalculator {
 
     public static final int LEVEL_NUMBER = 5;
-    public static final double PEAK_CUTOFF = 0.50;
+    public static final double PEAK_CUTOFF = 0.73;
     public static final double MAX_FREQUENCY = 1000;
     public static final int NEIGHBOUR_COUNT = 3;
 
@@ -34,6 +34,8 @@ public class WaveletCalculator implements PitchCalculator {
     private int mMinPeakDistance;
 
     private int mCurrentLevel;
+
+    private double mPreviousPitch;
 
     public WaveletCalculator(int sampleRate, int sampleLength) {
         SAMPLE_RATE = sampleRate;
@@ -66,6 +68,8 @@ public class WaveletCalculator implements PitchCalculator {
             mModes.add(0.0);
         }
         mCurrentLevel = 0;
+
+        mPreviousPitch = 0.0;
     }
 
     @Override
@@ -91,11 +95,12 @@ public class WaveletCalculator implements PitchCalculator {
             if(mCurrentLevel != 0 && mModes.get(mCurrentLevel-1) != 0 && mMinIndices.get(mCurrentLevel).size() >= 2
                     && mMaxIndices.get(mCurrentLevel).size() >= 2) {
                 if(mModes.get(mCurrentLevel-1) - 2*mModes.get(mCurrentLevel) <= mMinPeakDistance) {
-                    return SAMPLE_RATE/mModes.get(mCurrentLevel-1)/Math.pow(2,mCurrentLevel);
+                    double foundPitch = SAMPLE_RATE/mModes.get(mCurrentLevel-1)/Math.pow(2,mCurrentLevel);
+                    mPreviousPitch = foundPitch;
+                    return foundPitch;
                 }
             }
 
-            Log.d("PitchWavelet",String.valueOf(mModes.get(mCurrentLevel)));
             mCurrentLevel++;
         }
 
@@ -192,9 +197,12 @@ public class WaveletCalculator implements PitchCalculator {
 
         mModes.set(mCurrentLevel,0.0);
 
+        int width = SAMPLE_LENGTH/(int)Math.pow(2,mCurrentLevel+1);
+
         double greatestMode = 1;
 
         List<Integer> currentDifferences = mDifferences.get(mCurrentLevel);
+
 
         for(int i = 0; i < currentDifferences.size(); i++) {
             double currentMode = 0;
@@ -207,9 +215,19 @@ public class WaveletCalculator implements PitchCalculator {
                 }
             }
 
-            if (currentMode > greatestMode) {
-                greatestMode = currentMode;
+            if (currentMode >= greatestMode && currentMode > Math.floor(width/currentDifferences.get(i)/4.0)) {
 
+                if(currentMode == greatestMode) {
+                    if (mPreviousPitch != 0.0 && Math.abs(currentDifferences.get(i)-mPreviousPitch/Math.pow(2,mCurrentLevel)) < mMinPeakDistance) {
+                        mModes.set(mCurrentLevel,(double)currentDifferences.get(i));
+                    } else if (mPreviousPitch == 0.0 && (currentDifferences.get(i) > 1.95*mModes.get(mCurrentLevel) && currentDifferences.get(i) < 2.05*mModes.get(mCurrentLevel))) {
+                        mModes.set(mCurrentLevel,(double)currentDifferences.get(i));
+                    }
+                } else {
+                    greatestMode = currentMode;
+                    mModes.set(mCurrentLevel,(double)currentDifferences.get(i));
+                }
+            } else if (currentMode == greatestMode-1 && mPreviousPitch != 0.0 && Math.abs(currentDifferences.get(i)-mPreviousPitch/Math.pow(2,mCurrentLevel)) < mMinPeakDistance) {
                 mModes.set(mCurrentLevel,(double)currentDifferences.get(i));
             }
         }

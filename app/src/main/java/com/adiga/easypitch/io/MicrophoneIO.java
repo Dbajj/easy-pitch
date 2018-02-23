@@ -15,7 +15,8 @@ public class MicrophoneIO {
     private int mRecordBufferSize;
     private static final int CHANNELS = AudioFormat.CHANNEL_IN_MONO;
     private static final int ENCODING  = AudioFormat.ENCODING_PCM_16BIT;
-    public static final int OUTPUT_SAMPLE_SIZE = 2048;
+    public static final int OUTPUT_SAMPLE_SIZE = 4096;
+    public static final double SAMPLE_OVERLAP = 0.75;
 
     // TODO make this a bit more robust (what if encoding changes?
     private static final int BYTES_PER_ELEMENT = 2;
@@ -23,6 +24,7 @@ public class MicrophoneIO {
     private AudioRecord recorder;
     private Thread recordingThread;
     private boolean isRecording = false;
+    private boolean emptyBuffer = true;
 
     private double[] audioBuffer = new double[OUTPUT_SAMPLE_SIZE];
 
@@ -30,6 +32,7 @@ public class MicrophoneIO {
         mSampleRate = findSampleRate();
         mRecordBufferSize = AudioRecord.getMinBufferSize(mSampleRate,CHANNELS,ENCODING);
         recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,mSampleRate,CHANNELS,ENCODING, mRecordBufferSize);
+        emptyBuffer = true;
     }
 
     private int findSampleRate() {
@@ -98,13 +101,30 @@ public class MicrophoneIO {
 
     private void readAudioDataToQueue() {
 
-        short[] shortInputArray = new short[OUTPUT_SAMPLE_SIZE];
+        if(emptyBuffer) {
+            short[] shortInputArray = new short[OUTPUT_SAMPLE_SIZE];
 
-        recorder.read(shortInputArray,0,OUTPUT_SAMPLE_SIZE,AudioRecord.READ_BLOCKING);
+            recorder.read(shortInputArray,0,OUTPUT_SAMPLE_SIZE,AudioRecord.READ_BLOCKING);
 
 
-        for (int i = 0; i < shortInputArray.length; i++) {
-            audioBuffer[i] = shortInputArray[i];
+            for (int i = 0; i < shortInputArray.length; i++) {
+                audioBuffer[i] = shortInputArray[i];
+            }
+
+            emptyBuffer = false;
+        } else {
+            int overlap_offset = (int)Math.floor(OUTPUT_SAMPLE_SIZE*(1-SAMPLE_OVERLAP));
+            short[] shortInputArray = new short[overlap_offset];
+
+            recorder.read(shortInputArray,0,shortInputArray.length,AudioRecord.READ_BLOCKING);
+
+            for(int i = 0; i < OUTPUT_SAMPLE_SIZE-overlap_offset; i++) {
+                audioBuffer[i] = audioBuffer[overlap_offset+i];
+            }
+
+            for(int i = 0; i < overlap_offset; i++) {
+                audioBuffer[OUTPUT_SAMPLE_SIZE-overlap_offset+i] = shortInputArray[i];
+            }
         }
 
     }
