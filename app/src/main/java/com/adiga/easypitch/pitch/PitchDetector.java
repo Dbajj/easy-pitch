@@ -11,7 +11,7 @@ import com.adiga.easypitch.io.MicrophoneIO;
 
 public class PitchDetector {
 
-    public static final double CUTOFF = 0.75;
+    public static final double CUTOFF = 0.83;
     private static final int RUNNING_AVERAGE_SIZE = 32;
 
     private PitchCalculator mPitchCalculator;

@@ -9,6 +9,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private ObjectAnimator animator;
 
 
-    private static final int PITCH_QUERY_DELAY = 5;
+    private static final int PITCH_QUERY_DELAY = 10;
 
 
     @Override
@@ -107,11 +108,8 @@ public class MainActivity extends AppCompatActivity {
 
         offset = (float)ScaleData.getOffset(mPitch);
 
-        animator = ObjectAnimator.ofFloat(mGuitarString,"CurveOffset",offset);
+        mGuitarString.setCurveOffset(offset);
 
-        animator.setDuration(10);
-
-        animator.start();
 
     }
 

@@ -2,6 +2,7 @@ package com.adiga.easypitch.ui;
 
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
@@ -22,9 +23,17 @@ import com.adiga.easypitch.R;
 
 public class StringView extends View {
 
+    private static final double OFFSET_TOLERANCE = 0.03;
+    private static final double SCALE_SENSITIVTITY = 1;
+
     private float mOffset;
 
     private float[] mCoordinates;
+    private boolean close;
+    private Path mStringPath;
+    private Paint mStringPaint;
+    private Paint mStringPaintHighlight;
+
 
     public StringView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -39,6 +48,9 @@ public class StringView extends View {
         }
 
         mCoordinates = new float[6];
+        mStringPath = new Path();
+        mStringPaint = new Paint();
+        mStringPaintHighlight = new Paint();
     }
 
     private void setCoordinates() {
@@ -64,7 +76,7 @@ public class StringView extends View {
 
         float heightNoPadding = getLayoutParams().height-getPaddingTop()-getPaddingBottom();
 
-        float offsetAdjustment = heightNoPadding*mOffset;
+        float offsetAdjustment = -1*heightNoPadding*mOffset;
 
 
         return midPointY+offsetAdjustment;
@@ -74,18 +86,33 @@ public class StringView extends View {
     protected void onDraw(Canvas canvas) {
         setCoordinates();
 
-        Path p = new Path();
-        p.moveTo(mCoordinates[0],mCoordinates[1]);
+        mStringPath.reset();
 
-        p.quadTo(mCoordinates[2],mCoordinates[3],mCoordinates[4],mCoordinates[5]);
-        Paint paint = new Paint();
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(5F);
-        paint.setStrokeCap(Paint.Cap.ROUND);
-        paint.setAntiAlias(true);
-        paint.setFilterBitmap(true);
-        paint.setDither(true);
-        canvas.drawPath(p,paint);
+        mStringPath.moveTo(mCoordinates[0],mCoordinates[1]);
+
+        mStringPath.quadTo(mCoordinates[2],mCoordinates[3],mCoordinates[4],mCoordinates[5]);
+
+        mStringPaint.reset();
+
+        mStringPaint.setStyle(Paint.Style.STROKE);
+        mStringPaint.setStrokeWidth(10F);
+        mStringPaint.setStrokeCap(Paint.Cap.ROUND);
+        mStringPaint.setAntiAlias(true);
+
+        if(close) {
+            mStringPaintHighlight.reset();
+            mStringPaintHighlight.setStyle(Paint.Style.STROKE);
+            mStringPaintHighlight.setStrokeCap(Paint.Cap.ROUND);
+            mStringPaintHighlight.setStrokeWidth(30F);
+            mStringPaintHighlight.setColor(Color.GREEN);
+            mStringPaintHighlight.setMaskFilter(new BlurMaskFilter(15,BlurMaskFilter.Blur.NORMAL));
+
+            canvas.drawPath(mStringPath,mStringPaintHighlight);
+
+        }
+        canvas.drawPath(mStringPath,mStringPaint);
+
+
     }
 
     @Override
@@ -99,7 +126,14 @@ public class StringView extends View {
         } else if (f < -1F) {
             mOffset = -1F;
         } else {
-            mOffset = f;
+            double scaledOffset = Math.tanh(SCALE_SENSITIVTITY*f);
+            mOffset = (float)scaledOffset;
+        }
+
+        if(Math.abs(mOffset) <= OFFSET_TOLERANCE) {
+            close = true;
+        } else {
+            close = false;
         }
 
         invalidate();
