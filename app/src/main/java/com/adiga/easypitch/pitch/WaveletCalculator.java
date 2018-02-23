@@ -1,5 +1,7 @@
 package com.adiga.easypitch.pitch;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +13,7 @@ public class WaveletCalculator implements PitchCalculator {
 
     public static final int LEVEL_NUMBER = 5;
     public static final double PEAK_CUTOFF = 0.50;
-    public static final double MAX_FREQUENCY = 3000;
+    public static final double MAX_FREQUENCY = 1000;
     public static final int NEIGHBOUR_COUNT = 3;
 
     private final int SAMPLE_RATE;
@@ -69,6 +71,8 @@ public class WaveletCalculator implements PitchCalculator {
     @Override
     public double findPitch(double[] audioInput) {
 
+        mCurrentLevel = 0;
+
         if(audioInput == null) {
             throw new IllegalArgumentException("findPitch given a null audio input");
         } else if (audioInput.length != SAMPLE_LENGTH) {
@@ -91,8 +95,12 @@ public class WaveletCalculator implements PitchCalculator {
                 }
             }
 
+            Log.d("PitchWavelet",String.valueOf(mModes.get(mCurrentLevel)));
             mCurrentLevel++;
         }
+
+
+
 
         return 0.0;
     }

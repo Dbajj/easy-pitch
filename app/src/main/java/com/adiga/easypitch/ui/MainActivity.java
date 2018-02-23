@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private ObjectAnimator animator;
 
 
-    private static final int PITCH_QUERY_DELAY = 20;
+    private static final int PITCH_QUERY_DELAY = 10;
 
 
     @Override

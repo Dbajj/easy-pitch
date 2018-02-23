@@ -116,10 +116,15 @@ public final class ScaleData {
     }
 
     public static double getOffset(double pitch) {
-        double closest = getClosestPitch(pitch);
+        Double closest = getClosestPitch(pitch);
 
-        double higher = NOTE_FREQUENCIES.higherKey(closest);
-        double lower = NOTE_FREQUENCIES.lowerKey(closest);
+
+        Double higher = NOTE_FREQUENCIES.higherKey(closest);
+        Double lower = NOTE_FREQUENCIES.lowerKey(closest);
+
+        if(higher == null || lower == null) {
+            return 0;
+        }
 
         double upper_range = Math.abs(higher-closest);
         double lower_range = Math.abs(lower-closest);
