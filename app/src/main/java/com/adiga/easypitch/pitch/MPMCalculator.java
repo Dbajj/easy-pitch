@@ -71,6 +71,7 @@ public class MPMCalculator implements PitchCalculator {
                 } else if (mPreviousPitch != 0.0 && Math.abs((mPreviousPitch-mMaxima.get(i).getY())/mPreviousPitch) <= MATCH_TOLERANCE
                         && mMaxima.get(i).getY() > CUTOFF*MATCH_ALLOWANCE) {
                     double output = SAMPLE_RATE/mMaxima.get(i).getX();
+                    mPreviousPitch = output;
                     return output;
                 }
             }
@@ -185,8 +186,7 @@ public class MPMCalculator implements PitchCalculator {
      */
     private void calculateSDF(double[] input) {
 
-        autoCorrelationSlow(input);
-//        fftAutoCorrelationFast(input);
+        fftAutoCorrelationFast(input);
 
         sdfDivisor(input,inputACV);
 

@@ -15,8 +15,8 @@ public class MicrophoneIO {
     private int mRecordBufferSize;
     private static final int CHANNELS = AudioFormat.CHANNEL_IN_MONO;
     private static final int ENCODING  = AudioFormat.ENCODING_PCM_16BIT;
-    public static final int OUTPUT_SAMPLE_SIZE = 4096/2;
-    public static final double SAMPLE_OVERLAP = 0.75;
+    public static final int OUTPUT_SAMPLE_SIZE = 2048;
+    public static final double SAMPLE_OVERLAP = 0.50;
 
     // TODO make this a bit more robust (what if encoding changes?
     private static final int BYTES_PER_ELEMENT = 2;
