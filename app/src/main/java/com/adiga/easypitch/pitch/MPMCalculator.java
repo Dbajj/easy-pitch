@@ -16,6 +16,8 @@ import java.util.List;
 
 public class MPMCalculator implements PitchCalculator {
     private final double CUTOFF;
+    private static final double MATCH_ALLOWANCE = 0.2;
+    private static final double MATCH_TOLERANCE = 0.1;
     private final int SAMPLE_RATE;
 
     private double[] inputSDF;
@@ -25,6 +27,7 @@ public class MPMCalculator implements PitchCalculator {
     private double[] zeroPadding;
     private double[][] inputCenteredPaddedComplex;
     private FastFourierTransformer mFFTCalc;
+    private double mPreviousPitch;
 
     /**
      * Initializes new PitchCalculator, by setting pitch cutoff, sample rate and FFT calculator
@@ -34,6 +37,7 @@ public class MPMCalculator implements PitchCalculator {
     public MPMCalculator(int sampleRate, int sampleLength) {
         mFFTCalc = new FastFourierTransformer(DftNormalization.STANDARD);
         CUTOFF = PitchDetector.CUTOFF;
+
         SAMPLE_RATE = sampleRate;
 
         inputACV = new double[sampleLength];
@@ -42,6 +46,7 @@ public class MPMCalculator implements PitchCalculator {
         inputSDF = new double[sampleLength];
         zeroPadding = new double[sampleLength];
         inputCenteredPaddedComplex = new double[2][sampleLength*2];
+        mPreviousPitch = 0.0;
     }
 
 
@@ -60,6 +65,11 @@ public class MPMCalculator implements PitchCalculator {
 
             for (int i = 0; i < mMaxima.size()/2; i++) {
                 if(mMaxima.get(i).getY() > CUTOFF) {
+                    double output = SAMPLE_RATE/mMaxima.get(i).getX();
+                    mPreviousPitch = output;
+                    return output;
+                } else if (mPreviousPitch != 0.0 && Math.abs((mPreviousPitch-mMaxima.get(i).getY())/mPreviousPitch) <= MATCH_TOLERANCE
+                        && mMaxima.get(i).getY() > CUTOFF*MATCH_ALLOWANCE) {
                     double output = SAMPLE_RATE/mMaxima.get(i).getX();
                     return output;
                 }
