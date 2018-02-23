@@ -59,7 +59,7 @@ public class PeakFind {
             if (zeroCrossing == 0) continue;
 
 
-            if (input[i-1] < input[i] & input[i] > input[i+1])  {
+            if (input[i-1] < input[i] && input[i] > input[i+1])  {
 
                 left.setX(i-1.0);
                 left.setY(input[i-1]);
