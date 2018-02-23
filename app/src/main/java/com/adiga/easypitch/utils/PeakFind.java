@@ -54,7 +54,7 @@ public class PeakFind {
 
         for (int i = 1; i < input.length - 1; i++) {
 
-            if (input[i-1] > 0 & input[i] <= 0 & zeroCrossing == 0) zeroCrossing = i;
+            if (input[i-1] > 0 && input[i] <= 0 && zeroCrossing == 0) zeroCrossing = i;
 
             if (zeroCrossing == 0) continue;
 
