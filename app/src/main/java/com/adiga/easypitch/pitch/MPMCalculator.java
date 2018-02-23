@@ -116,6 +116,22 @@ public class MPMCalculator implements PitchCalculator {
 
     }
 
+    private void autoCorrelationSlow(double[] input) {
+        centerDoubleArray(input);
+
+        for(int i = 0; i < input.length; i++) {
+            double acf = 0;
+
+            for(int j = 0; j < input.length-i; j++) {
+                acf += input[j]*input[j+i];
+            }
+
+            inputACV[i] = acf;
+        }
+    }
+
+
+
     /**
      * Calculates the norm of the given values in-place (modifies input array).
      * The norm is calculated as the sum of squares of the real and complex components of each value
@@ -169,7 +185,8 @@ public class MPMCalculator implements PitchCalculator {
      */
     private void calculateSDF(double[] input) {
 
-        fftAutoCorrelationFast(input);
+        autoCorrelationSlow(input);
+//        fftAutoCorrelationFast(input);
 
         sdfDivisor(input,inputACV);
 
