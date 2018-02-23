@@ -6,36 +6,40 @@
     android:layout_height="match_parent"
     tools:context="com.adiga.easypitch.ui.MainActivity">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        tools:layout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="0dp">
+    <TextView
+        android:id="@+id/pitch_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="NoteValue"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"/>
 
-        <TextView
-            android:id="@+id/audio_sample"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hello World"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+    <com.adiga.easypitch.ui.StringView
+        android:id="@+id/guitar_string"
+        android:layout_width="286dp"
+        android:layout_height="88dp"
+        android:layout_marginTop="5dp"
+        android:padding="5dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/pitch_value" />
 
-        <com.adiga.easypitch.ui.StringView
-            android:id="@+id/guitar_string"
-            android:layout_width="286dp"
-            android:layout_height="70dp"
-            android:padding="5dp" />
+    <TextView
+        android:id="@+id/note_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/guitar_string"
+        tools:text="NoteName" />
 
-        <TextView
-            android:id="@+id/instant_audio"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="TextView" />
 
-
-    </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>

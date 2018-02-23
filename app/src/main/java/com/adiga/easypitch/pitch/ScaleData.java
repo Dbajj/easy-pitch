@@ -14,7 +14,7 @@ public final class ScaleData {
     private static final double A4 = 440;
     public static final double NOTE_STEP = Math.pow(2,1/12.0);
     private static double[] frequencies = new double[12*9];
-    public static final NavigableMap<Double,String> NOTE_FREQUENCIES;
+    private static final NavigableMap<Double,String> NOTE_FREQUENCIES;
 
     static {
         NOTE_FREQUENCIES = generateFrequencies();
@@ -80,6 +80,10 @@ public final class ScaleData {
         }
 
         return noteFrequencies;
+    }
+
+    public static String getFrequencyNote(double frequency) {
+        return NOTE_FREQUENCIES.get(frequency);
     }
 
     public static double getNoteFrequency(String note) {
